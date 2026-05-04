@@ -1,0 +1,16 @@
+{
+  "compilerOptions": {
+    "lib": ["dom", "dom.iterable", "esnext"],
+    "allowJs": true,
+    "skipLibCheck": true,
+    "strict": false,
+    "esModuleInterop": true,
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "resolveJsonModule": true,
+    "outDir": ".seed-out",
+    "paths": { "@/*": ["./src/*"] }
+  },
+  "include": ["src/lib/seed.ts", "src/models/**/*.ts", "src/lib/db/**/*.ts"],
+  "exclude": ["node_modules"]
+}
