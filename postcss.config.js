@@ -1,4 +1,4 @@
-mmodule.exports = {
+module.exports = {
   plugins: {
     tailwindcss: {},
     autoprefixer: {},
