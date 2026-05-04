@@ -1,12 +1,7 @@
 import mongoose from "mongoose";
-import * as dotenv from "dotenv";
-import path from "path";
-
-dotenv.config({ path: path.join(__dirname, "../../.env.local") });
 
 const MONGODB_URI = process.env.MONGODB_URI || "";
 
-// ── Inline minimal schemas for seed (avoids next.js module resolution issues) ──
 const ProjectSchema = new mongoose.Schema({
   name: String, slug: String, description: String,
   integrations: {
@@ -59,23 +54,21 @@ const DashboardConfig = mongoose.models.DashboardConfig || mongoose.model("Dashb
 
 async function seed() {
   if (!MONGODB_URI) {
-    console.error("❌ MONGODB_URI not found in .env.local");
+    console.error("MONGODB_URI not found");
     process.exit(1);
   }
 
-  console.log("🔗 Connecting to MongoDB...");
+  console.log("Connecting to MongoDB...");
   await mongoose.connect(MONGODB_URI);
-  console.log("✅ Connected\n");
+  console.log("Connected!");
 
-  // Clean up
   await Promise.all([
     Project.deleteMany({}), User.deleteMany({}),
     ProductInstance.deleteMany({}), Conversation.deleteMany({}),
     DashboardConfig.deleteMany({}),
   ]);
-  console.log("🧹 Cleared existing data");
+  console.log("Cleared existing data");
 
-  // ── Projects ─────────────────────────────────────────────────────
   const techcorp = await Project.create({
     name: "TechCorp Inc.", slug: "techcorp", description: "B2B SaaS company",
     integrations: {
@@ -91,9 +84,8 @@ async function seed() {
       crm: { enabled: true, crmName: "Salesforce" },
     },
   });
-  console.log("✅ Projects created: techcorp, retailco");
+  console.log("Projects created");
 
-  // ── Users ─────────────────────────────────────────────────────────
   const adminUser = await User.create({
     name: "Alex Admin", email: "admin@techcorp.com",
     passwordHash: "demo-hash", projectId: techcorp._id, role: "admin",
@@ -106,29 +98,27 @@ async function seed() {
     name: "Rita Retail", email: "admin@retailco.com",
     passwordHash: "demo-hash", projectId: retailco._id, role: "admin",
   });
-  console.log("✅ Users created");
+  console.log("Users created");
 
-  // ── Product Instances ─────────────────────────────────────────────
   const salesBot = await ProductInstance.create({
     projectId: techcorp._id, nameSpace: "techcorp-sales",
     productType: "ai-sales-assistant", displayName: "Sales AI Assistant",
-    systemPrompt: "You are a helpful sales AI for TechCorp. Help close deals and answer product questions.",
+    systemPrompt: "You are a helpful sales AI for TechCorp.",
   });
 
-  const supportBot = await ProductInstance.create({
+  await ProductInstance.create({
     projectId: retailco._id, nameSpace: "retailco-support",
     productType: "ai-support-agent", displayName: "Support Agent",
-    systemPrompt: "You are a customer support agent for RetailCo. Help resolve issues quickly.",
+    systemPrompt: "You are a customer support agent for RetailCo.",
   });
-  console.log("✅ Product instances created");
+  console.log("Product instances created");
 
-  // ── Sample Conversations ──────────────────────────────────────────
   await Conversation.create({
     projectId: techcorp._id, productInstanceId: salesBot._id, userId: adminUser._id,
     title: "Q2 pipeline review",
     messages: [
-      { role: "user", content: "Show me the current pipeline status", steps: [] },
-      { role: "assistant", content: "Your pipeline has 24 leads, 8 in demo, 5 proposals active. Top deal: Global Retail Co at $28,000.", steps: ["Analyzing your request...", "Querying CRM pipeline...", "Generating response..."] },
+      { role: "user", content: "Show me the current pipeline status" },
+      { role: "assistant", content: "Your pipeline has 24 leads, 8 in demo, 5 proposals active.", steps: ["Analyzing...", "Querying CRM...", "Generating response..."] },
     ],
   });
   await Conversation.create({
@@ -136,13 +126,11 @@ async function seed() {
     title: "Latest Shopify orders",
     messages: [
       { role: "user", content: "What are our recent orders?" },
-      { role: "assistant", content: "Recent orders: #1042 Pro Plan $299 (fulfilled), #1041 Starter Kit $49 (processing), #1040 Enterprise License $999 (fulfilled).", steps: ["Fetching Shopify store data...", "Generating response..."] },
+      { role: "assistant", content: "Recent orders: #1042 Pro Plan $299 (fulfilled), #1041 Starter Kit $49 (processing).", steps: ["Fetching Shopify data...", "Generating response..."] },
     ],
   });
-  console.log("✅ Sample conversations created");
+  console.log("Conversations created");
 
-  // ── Dashboard Config (THE KEY DOCUMENT) ──────────────────────────
-  // Edit this document in MongoDB to change the admin dashboard UI!
   await DashboardConfig.create({
     projectId: techcorp._id,
     title: "TechCorp Admin Dashboard",
@@ -150,10 +138,7 @@ async function seed() {
     theme: "light",
     sections: [
       {
-        id: "overview",
-        label: "Overview",
-        description: "Key metrics at a glance",
-        order: 1,
+        id: "overview", label: "Overview", description: "Key metrics at a glance", order: 1,
         widgets: [
           { id: "w1", type: "stat-card", title: "Total Conversations", span: "third", order: 1, config: { statKey: "total-conversations" } },
           { id: "w2", type: "stat-card", title: "Today's Chats", span: "third", order: 2, config: { statKey: "today-conversations" } },
@@ -162,24 +147,18 @@ async function seed() {
         ],
       },
       {
-        id: "analytics",
-        label: "Analytics",
-        description: "Conversation trends and AI usage",
-        order: 2,
+        id: "analytics", label: "Analytics", description: "Conversation trends and AI usage", order: 2,
         widgets: [
           { id: "w5", type: "conversation-chart", title: "Weekly Conversations", span: "half", order: 1 },
           { id: "w6", type: "ai-usage", title: "AI Usage Quota", span: "half", order: 2 },
         ],
       },
       {
-        id: "integrations-activity",
-        label: "Integrations & Activity",
-        description: "Connected services and recent interactions",
-        order: 3,
+        id: "integrations-activity", label: "Integrations & Activity", description: "Connected services and recent interactions", order: 3,
         widgets: [
           { id: "w7", type: "integration-status", title: "Integration Status", span: "half", order: 1 },
           { id: "w8", type: "recent-activity", title: "Recent Conversations", span: "half", order: 2 },
-          { id: "w9", type: "quick-actions", title: "Quick Actions", span: "third", order: 3, config: { actions: [{ label: "Go to Chat", href: "/chat" }, { label: "View All Conversations", href: "/chat" }, { label: "Export Report", href: "#" }] } },
+          { id: "w9", type: "quick-actions", title: "Quick Actions", span: "third", order: 3, config: { actions: [{ label: "Go to Chat", href: "/chat" }, { label: "View Conversations", href: "/chat" }] } },
         ],
       },
     ],
@@ -201,12 +180,11 @@ async function seed() {
     ],
   });
 
-  console.log("✅ Dashboard configs created (the MongoDB docs that drive the admin UI!)");
-  console.log("\n🎉 Seed complete! Demo logins:");
-  console.log("   admin@techcorp.com  → project: techcorp  (admin)");
-  console.log("   member@techcorp.com → project: techcorp  (member)");
-  console.log("   admin@retailco.com  → project: retailco  (admin)");
-  console.log("\n📌 Edit the DashboardConfig collection in MongoDB Atlas to see live UI changes!");
+  console.log("Dashboard configs created!");
+  console.log("\nSeed complete! Demo logins:");
+  console.log("  admin@techcorp.com  / project: techcorp  (admin)");
+  console.log("  member@techcorp.com / project: techcorp  (member)");
+  console.log("  admin@retailco.com  / project: retailco  (admin)");
 
   await mongoose.disconnect();
 }
