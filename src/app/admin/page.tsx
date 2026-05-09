@@ -2,168 +2,100 @@
 import { useRouter } from "next/navigation";
 import { useAdminDashboard, useUpdateIntegrations } from "@/hooks/useApi";
 import { WidgetRenderer } from "@/components/admin/WidgetRenderer";
-import { ArrowLeft, RefreshCw, Settings, ToggleLeft, ToggleRight, Loader2 } from "lucide-react";
 import { useState } from "react";
 
-interface Widget {
-  id: string; type: string; title: string; subtitle?: string;
-  order: number; span?: "full" | "half" | "third"; config?: Record<string, unknown>;
-}
-interface Section { id: string; label: string; description?: string; order: number; widgets: Widget[]; }
-
-function getSpanClass(span?: string) {
-  if (span === "full") return "col-span-full";
-  if (span === "third") return "lg:col-span-1";
-  return "lg:col-span-1"; // default half (2-col grid)
-}
+interface Widget { id:string; type:string; title:string; subtitle?:string; order:number; span?:string; config?:Record<string,unknown>; }
+interface Section { id:string; label:string; description?:string; order:number; widgets:Widget[]; }
 
 export default function AdminPage() {
   const router = useRouter();
   const { data, isLoading, error, refetch } = useAdminDashboard();
-  const { mutateAsync: updateIntegrations, isPending } = useUpdateIntegrations();
-  const [toggling, setToggling] = useState<string | null>(null);
+  const { mutateAsync: updateIntegrations } = useUpdateIntegrations();
+  const [toggling, setToggling] = useState<string|null>(null);
 
-  if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="text-center">
-          <Loader2 className="w-8 h-8 text-brand-600 animate-spin mx-auto mb-3" />
-          <p className="text-gray-500 text-sm">Loading dashboard config from MongoDB...</p>
-        </div>
+  if (isLoading) return (
+    <div style={{minHeight:"100vh",display:"flex",alignItems:"center",justifyContent:"center",fontFamily:"-apple-system,sans-serif"}}>
+      <div style={{textAlign:"center"}}>
+        <div style={{fontSize:"32px",marginBottom:"12px"}}>⏳</div>
+        <p style={{color:"#64748b",fontSize:"14px"}}>Loading dashboard from MongoDB...</p>
       </div>
-    );
-  }
+    </div>
+  );
 
-  if (error) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="text-center">
-          <p className="text-red-600 font-medium mb-2">Access denied or error</p>
-          <button onClick={() => router.push("/login")} className="text-sm text-brand-600 underline">Sign in</button>
-        </div>
+  if (error) return (
+    <div style={{minHeight:"100vh",display:"flex",alignItems:"center",justifyContent:"center",fontFamily:"-apple-system,sans-serif"}}>
+      <div style={{textAlign:"center"}}>
+        <p style={{color:"#ef4444",fontWeight:600,marginBottom:"8px"}}>Access denied or error</p>
+        <button onClick={()=>router.push("/login")} style={{color:"#2563eb",background:"none",border:"none",cursor:"pointer",textDecoration:"underline"}}>Sign in</button>
       </div>
-    );
-  }
+    </div>
+  );
 
   const config = data?.config;
   const stats = data?.stats;
 
-  if (!config) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="text-center max-w-sm">
-          <Settings className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-          <h2 className="text-lg font-semibold text-gray-700 mb-2">No Dashboard Config Found</h2>
-          <p className="text-sm text-gray-400 mb-4">Run the seed script to create the initial MongoDB dashboard config document.</p>
-          <code className="text-xs bg-gray-100 px-3 py-2 rounded-lg block text-left">npm run seed</code>
-        </div>
+  if (!config) return (
+    <div style={{minHeight:"100vh",display:"flex",alignItems:"center",justifyContent:"center",fontFamily:"-apple-system,sans-serif"}}>
+      <div style={{textAlign:"center",maxWidth:"400px"}}>
+        <div style={{fontSize:"48px",marginBottom:"12px"}}>⚙️</div>
+        <h2 style={{fontSize:"18px",fontWeight:600,color:"#374151",marginBottom:"8px"}}>No Dashboard Config Found</h2>
+        <p style={{fontSize:"14px",color:"#94a3b8"}}>Run the seed script to create the MongoDB dashboard config.</p>
+        <code style={{display:"block",background:"#f1f5f9",padding:"8px 12px",borderRadius:"8px",marginTop:"12px",fontSize:"12px"}}>npm run seed</code>
       </div>
-    );
-  }
+    </div>
+  );
 
-  const sortedSections: Section[] = [...(config.sections || [])].sort((a: Section, b: Section) => a.order - b.order);
+  const sortedSections:Section[] = [...(config.sections||[])].sort((a:Section,b:Section)=>a.order-b.order);
 
-  async function toggleIntegration(type: "shopify" | "crm") {
+  async function toggleIntegration(type:"shopify"|"crm") {
     setToggling(type);
-    const current = stats?.integrations || { shopify: { enabled: false }, crm: { enabled: false } };
+    const current = stats?.integrations||{shopify:{enabled:false},crm:{enabled:false}};
     try {
       await updateIntegrations({
-        shopify: {
-          enabled: type === "shopify" ? !current.shopify?.enabled : current.shopify?.enabled ?? false,
-          storeUrl: "https://demo.myshopify.com",
-        },
-        crm: {
-          enabled: type === "crm" ? !current.crm?.enabled : current.crm?.enabled ?? false,
-          crmName: "HubSpot",
-        },
+        shopify:{ enabled:type==="shopify"?!current.shopify?.enabled:current.shopify?.enabled??false, storeUrl:"https://demo.myshopify.com" },
+        crm:{ enabled:type==="crm"?!current.crm?.enabled:current.crm?.enabled??false, crmName:"HubSpot" },
       });
       refetch();
-    } finally {
-      setToggling(null);
-    }
+    } finally { setToggling(null); }
   }
 
   return (
-    <div className="min-h-screen bg-gray-50" data-testid="admin-dashboard">
+    <div style={{minHeight:"100vh",background:"#f8fafc",fontFamily:"-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif"}}>
       {/* Header */}
-      <header className="bg-white border-b border-gray-200 sticky top-0 z-10">
-        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <button onClick={() => router.push("/chat")} className="flex items-center gap-2 text-gray-500 hover:text-gray-800 text-sm transition-colors">
-              <ArrowLeft className="w-4 h-4" /> Back
-            </button>
-            <div className="w-px h-5 bg-gray-200" />
+      <header style={{background:"white",borderBottom:"1px solid #e2e8f0",position:"sticky",top:0,zIndex:10}}>
+        <div style={{maxWidth:"1200px",margin:"0 auto",padding:"16px 24px",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+          <div style={{display:"flex",alignItems:"center",gap:"16px"}}>
+            <button onClick={()=>router.push("/chat")} style={{background:"none",border:"none",color:"#64748b",cursor:"pointer",fontSize:"14px"}}>← Back</button>
+            <div style={{width:"1px",height:"20px",background:"#e2e8f0"}}/>
             <div>
-              <h1 className="text-xl font-bold text-gray-900">{config.title}</h1>
-              {config.subtitle && <p className="text-xs text-gray-400">{config.subtitle}</p>}
+              <h1 style={{fontSize:"20px",fontWeight:700,color:"#1e293b",margin:0}}>{config.title}</h1>
+              {config.subtitle&&<p style={{fontSize:"12px",color:"#94a3b8",margin:0}}>{config.subtitle}</p>}
             </div>
           </div>
-          <div className="flex items-center gap-3">
-            <span className="text-xs bg-blue-50 text-blue-700 px-2.5 py-1 rounded-full font-medium border border-blue-200">
-              Config-driven from MongoDB
+          <div style={{display:"flex",alignItems:"center",gap:"12px"}}>
+            <span style={{fontSize:"12px",background:"#eff6ff",color:"#2563eb",padding:"4px 12px",borderRadius:"100px",fontWeight:600,border:"1px solid #bfdbfe"}}>
+              Config-driven from MongoDB ✓
             </span>
-            <button onClick={() => refetch()} className="p-2 hover:bg-gray-100 rounded-xl transition-colors text-gray-500">
-              <RefreshCw className="w-4 h-4" />
+            <button onClick={()=>refetch()} style={{background:"none",border:"1px solid #e2e8f0",borderRadius:"8px",padding:"6px 10px",cursor:"pointer",fontSize:"13px",color:"#64748b"}}>
+              ↻ Refresh
             </button>
           </div>
         </div>
       </header>
 
-      <div className="max-w-7xl mx-auto px-6 py-8 space-y-10">
+      <div style={{maxWidth:"1200px",margin:"0 auto",padding:"32px 24px"}}>
         {/* Integration Toggles */}
-        <div className="bg-white rounded-2xl border border-gray-200 p-6">
-          <h2 className="font-semibold text-gray-800 mb-4">Integration Controls <span className="text-xs text-gray-400 font-normal ml-2">changes affect chat AI behavior</span></h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div style={{background:"white",borderRadius:"16px",border:"1px solid #e2e8f0",padding:"24px",marginBottom:"32px"}}>
+          <h2 style={{fontSize:"16px",fontWeight:600,color:"#1e293b",marginBottom:"16px",margin:"0 0 16px"}}>
+            Integration Controls <span style={{fontSize:"12px",color:"#94a3b8",fontWeight:400}}>— changes affect chat AI behavior</span>
+          </h2>
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"12px"}}>
             {[
-              { key: "shopify" as const, name: "Shopify", icon: "🛍️", enabled: stats?.integrations?.shopify?.enabled },
-              { key: "crm" as const, name: "HubSpot CRM", icon: "📊", enabled: stats?.integrations?.crm?.enabled },
-            ].map((int) => (
-              <div key={int.key} className="flex items-center justify-between p-4 bg-gray-50 rounded-xl border border-gray-200">
-                <div className="flex items-center gap-3">
-                  <span className="text-2xl">{int.icon}</span>
+              {key:"shopify" as const, name:"Shopify", icon:"🛍️", enabled:stats?.integrations?.shopify?.enabled},
+              {key:"crm" as const, name:"HubSpot CRM", icon:"📊", enabled:stats?.integrations?.crm?.enabled},
+            ].map(int=>(
+              <div key={int.key} style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"16px",background:"#f8fafc",borderRadius:"12px",border:"1px solid #e2e8f0"}}>
+                <div style={{display:"flex",alignItems:"center",gap:"12px"}}>
+                  <span style={{fontSize:"24px"}}>{int.icon}</span>
                   <div>
-                    <div className="font-medium text-sm text-gray-800">{int.name}</div>
-                    <div className="text-xs text-gray-400">{int.enabled ? "Active — AI uses this data" : "Inactive — AI ignores this"}</div>
-                  </div>
-                </div>
-                <button
-                  onClick={() => toggleIntegration(int.key)}
-                  disabled={toggling !== null}
-                  className={`transition-colors ${int.enabled ? "text-brand-600" : "text-gray-300"} disabled:opacity-50`}
-                >
-                  {toggling === int.key ? (
-                    <Loader2 className="w-7 h-7 animate-spin text-brand-400" />
-                  ) : int.enabled ? (
-                    <ToggleRight className="w-8 h-8" />
-                  ) : (
-                    <ToggleLeft className="w-8 h-8" />
-                  )}
-                </button>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Config-driven sections */}
-        {sortedSections.map((section) => {
-          const sortedWidgets = [...section.widgets].sort((a, b) => a.order - b.order);
-          return (
-            <section key={section.id} data-testid={`section-${section.id}`}>
-              <div className="mb-4">
-                <h2 className="text-lg font-bold text-gray-900">{section.label}</h2>
-                {section.description && <p className="text-sm text-gray-500 mt-0.5">{section.description}</p>}
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {sortedWidgets.map((widget) => (
-                  <div key={widget.id} className={getSpanClass(widget.span)} data-testid={`widget-${widget.id}`}>
-                    <WidgetRenderer widget={widget} stats={stats} />
-                  </div>
-                ))}
-              </div>
-            </section>
-          );
-        })}
-      </div>
-    </div>
-  );
-}
+                    <div style={{fontWeight:600,fontSize:"14px",color:"#1e293b"}}>{int.name}</div>
