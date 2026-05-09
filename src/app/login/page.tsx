@@ -3,9 +3,9 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 
 const DEMO_USERS = [
-  { email: "admin@techcorp.com", projectSlug: "techcorp", label: "TechCorp Admin", role: "admin" },
-  { email: "member@techcorp.com", projectSlug: "techcorp", label: "TechCorp Member", role: "member" },
-  { email: "admin@retailco.com", projectSlug: "retailco", label: "RetailCo Admin", role: "admin" },
+  { email: "admin@techcorp.com", projectSlug: "techcorp", label: "TechCorp Admin", role: "admin", color: "#2563eb" },
+  { email: "member@techcorp.com", projectSlug: "techcorp", label: "TechCorp Member", role: "member", color: "#64748b" },
+  { email: "admin@retailco.com", projectSlug: "retailco", label: "RetailCo Admin", role: "admin", color: "#2563eb" },
 ];
 
 export default function LoginPage() {
@@ -38,73 +38,51 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-brand-900 via-brand-800 to-brand-600 flex items-center justify-center p-4">
-      <div className="w-full max-w-md">
-        {/* Logo */}
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur px-4 py-2 rounded-full mb-4">
-            <div className="w-6 h-6 bg-white rounded-full flex items-center justify-center">
-              <span className="text-brand-700 text-xs font-black">D</span>
-            </div>
-            <span className="text-white font-semibold text-sm">Debales AI</span>
+    <div style={{minHeight:"100vh",background:"linear-gradient(135deg,#1e3a8a 0%,#1d4ed8 50%,#2563eb 100%)",display:"flex",alignItems:"center",justifyContent:"center",padding:"16px",fontFamily:"-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif"}}>
+      <div style={{width:"100%",maxWidth:"420px"}}>
+        <div style={{textAlign:"center",marginBottom:"32px"}}>
+          <div style={{display:"inline-flex",alignItems:"center",gap:"10px",background:"rgba(255,255,255,0.15)",padding:"8px 20px",borderRadius:"100px",marginBottom:"16px"}}>
+            <div style={{width:"28px",height:"28px",background:"white",borderRadius:"50%",display:"flex",alignItems:"center",justifyContent:"center",fontWeight:900,color:"#1d4ed8",fontSize:"14px"}}>D</div>
+            <span style={{color:"white",fontWeight:600,fontSize:"15px"}}>Debales AI</span>
           </div>
-          <h1 className="text-3xl font-bold text-white mb-2">Welcome back</h1>
-          <p className="text-brand-200">Sign in to your AI workspace</p>
+          <h1 style={{color:"white",fontSize:"28px",fontWeight:700,margin:"0 0 8px"}}>Welcome back</h1>
+          <p style={{color:"rgba(255,255,255,0.7)",fontSize:"14px",margin:0}}>Sign in to your AI workspace</p>
         </div>
-
-        <div className="bg-white rounded-2xl shadow-2xl p-8">
-          {/* Quick login */}
-          <div className="mb-6">
-            <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Quick Demo Login</p>
-            <div className="space-y-2">
-              {DEMO_USERS.map((u) => (
-                <button
-                  key={u.email}
-                  onClick={() => handleLogin(undefined, { email: u.email, projectSlug: u.projectSlug })}
-                  disabled={loading}
-                  className="w-full flex items-center gap-3 p-3 border border-gray-200 rounded-xl hover:bg-brand-50 hover:border-brand-300 transition-all text-left group"
-                >
-                  <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-white text-xs font-bold ${u.role === "admin" ? "bg-brand-600" : "bg-gray-400"}`}>
-                    {u.label[0]}
-                  </div>
-                  <div>
-                    <div className="text-sm font-medium text-gray-800">{u.label}</div>
-                    <div className="text-xs text-gray-400">{u.email} · {u.role}</div>
-                  </div>
-                  <span className="ml-auto text-brand-500 opacity-0 group-hover:opacity-100 transition-opacity">→</span>
-                </button>
-              ))}
-            </div>
+        <div style={{background:"white",borderRadius:"20px",boxShadow:"0 25px 50px rgba(0,0,0,0.25)",padding:"32px"}}>
+          <p style={{fontSize:"11px",fontWeight:700,color:"#94a3b8",textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:"12px"}}>Quick Demo Login</p>
+          <div style={{display:"flex",flexDirection:"column",gap:"8px",marginBottom:"24px"}}>
+            {DEMO_USERS.map((u)=>(
+              <button key={u.email} onClick={()=>handleLogin(undefined,{email:u.email,projectSlug:u.projectSlug})} disabled={loading}
+                style={{display:"flex",alignItems:"center",gap:"12px",padding:"12px 16px",border:"1px solid #e2e8f0",borderRadius:"12px",background:"white",cursor:"pointer",textAlign:"left",width:"100%"}}>
+                <div style={{width:"36px",height:"36px",borderRadius:"10px",background:u.color,display:"flex",alignItems:"center",justifyContent:"center",color:"white",fontWeight:700,fontSize:"14px",flexShrink:0}}>{u.label[0]}</div>
+                <div>
+                  <div style={{fontWeight:600,fontSize:"14px",color:"#1e293b"}}>{u.label}</div>
+                  <div style={{fontSize:"12px",color:"#94a3b8"}}>{u.email} · {u.role}</div>
+                </div>
+                <span style={{marginLeft:"auto",color:"#2563eb",fontSize:"16px"}}>→</span>
+              </button>
+            ))}
           </div>
-
-          <div className="relative my-6">
-            <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-gray-200" /></div>
-            <div className="relative flex justify-center"><span className="bg-white px-3 text-xs text-gray-400">or sign in manually</span></div>
+          <div style={{display:"flex",alignItems:"center",gap:"12px",marginBottom:"24px"}}>
+            <div style={{flex:1,height:"1px",background:"#e2e8f0"}}/>
+            <span style={{fontSize:"12px",color:"#94a3b8"}}>or sign in manually</span>
+            <div style={{flex:1,height:"1px",background:"#e2e8f0"}}/>
           </div>
-
-          <form onSubmit={handleLogin} className="space-y-4">
+          <form onSubmit={handleLogin} style={{display:"flex",flexDirection:"column",gap:"16px"}}>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-              <input
-                type="email" value={email} onChange={(e) => setEmail(e.target.value)}
-                placeholder="you@company.com" required
-                className="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent text-sm"
-              />
+              <label style={{display:"block",fontSize:"13px",fontWeight:600,color:"#374151",marginBottom:"6px"}}>Email</label>
+              <input type="email" value={email} onChange={e=>setEmail(e.target.value)} placeholder="you@company.com" required
+                style={{width:"100%",padding:"10px 14px",border:"1px solid #d1d5db",borderRadius:"10px",fontSize:"14px",outline:"none",boxSizing:"border-box",fontFamily:"inherit"}}/>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Project Slug</label>
-              <input
-                type="text" value={projectSlug} onChange={(e) => setProjectSlug(e.target.value)}
-                placeholder="techcorp" required
-                className="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent text-sm"
-              />
+              <label style={{display:"block",fontSize:"13px",fontWeight:600,color:"#374151",marginBottom:"6px"}}>Project Slug</label>
+              <input type="text" value={projectSlug} onChange={e=>setProjectSlug(e.target.value)} placeholder="techcorp" required
+                style={{width:"100%",padding:"10px 14px",border:"1px solid #d1d5db",borderRadius:"10px",fontSize:"14px",outline:"none",boxSizing:"border-box",fontFamily:"inherit"}}/>
             </div>
-            {error && <p className="text-red-600 text-sm bg-red-50 px-3 py-2 rounded-lg">{error}</p>}
-            <button
-              type="submit" disabled={loading}
-              className="w-full bg-brand-600 hover:bg-brand-700 text-white font-semibold py-2.5 rounded-xl transition-colors disabled:opacity-50"
-            >
-              {loading ? "Signing in..." : "Sign in"}
+            {error&&<div style={{background:"#fef2f2",border:"1px solid #fecaca",borderRadius:"8px",padding:"10px 14px",fontSize:"13px",color:"#dc2626"}}>{error}</div>}
+            <button type="submit" disabled={loading}
+              style={{background:loading?"#93c5fd":"#2563eb",color:"white",border:"none",borderRadius:"10px",padding:"12px",fontSize:"14px",fontWeight:600,cursor:loading?"not-allowed":"pointer",fontFamily:"inherit"}}>
+              {loading?"Signing in...":"Sign in"}
             </button>
           </form>
         </div>
