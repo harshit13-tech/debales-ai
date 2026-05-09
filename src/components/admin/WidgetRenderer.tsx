@@ -1,5 +1,5 @@
 "use client";
-
+import React from "react";
 interface Widget { id:string; type:string; title:string; subtitle?:string; order:number; span?:string; config?:Record<string,unknown>; }
 interface Stats {
   totalConversations:number; todayConversations:number; aiResponsesTotal:number;
@@ -129,7 +129,8 @@ function AiUsage({widget,stats}:{widget:Widget;stats:Stats}) {
   );
 }
 
-const WIDGET_MAP: Record<string,React.ComponentType<{widget:Widget;stats:Stats}>> = {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const WIDGET_MAP: Record<string, any> = {
   "stat-card":StatCard,
   "conversation-chart":ConversationChart,
   "integration-status":IntegrationStatus,
