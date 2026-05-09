@@ -1,5 +1,6 @@
 "use client";
 import React from "react";
+
 interface Widget { id:string; type:string; title:string; subtitle?:string; order:number; span?:string; config?:Record<string,unknown>; }
 interface Stats {
   totalConversations:number; todayConversations:number; aiResponsesTotal:number;
@@ -7,7 +8,7 @@ interface Stats {
   recentConversations:{_id:string;title:string;createdAt:string;messages:unknown[]}[];
 }
 
-const card = { background:"white", borderRadius:"16px", padding:"24px", border:"1px solid #e2e8f0" };
+const card:React.CSSProperties = {background:"white",borderRadius:"16px",padding:"24px",border:"1px solid #e2e8f0"};
 
 function StatCard({widget,stats}:{widget:Widget;stats:Stats}) {
   const map: Record<string,{value:string|number;change:string;icon:string;color:string}> = {
@@ -87,7 +88,7 @@ function RecentActivity({widget,stats}:{widget:Widget;stats:Stats}) {
             <div style={{width:"32px",height:"32px",background:"#eff6ff",borderRadius:"50%",display:"flex",alignItems:"center",justifyContent:"center",fontSize:"14px"}}>💬</div>
             <div style={{flex:1,minWidth:0}}>
               <div style={{fontSize:"13px",fontWeight:500,color:"#1e293b",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{c.title}</div>
-              <div style={{fontSize:"11px",color:"#94a3b8"}}>{new Date(c.createdAt).toLocaleDateString()} · {Array.isArray(c.messages)?c.messages.length:0} msgs</div>
+              <div style={{fontSize:"11px",color:"#94a3b8"}}>{new Date(c.createdAt).toLocaleDateString()}</div>
             </div>
           </div>
         ))
@@ -96,7 +97,7 @@ function RecentActivity({widget,stats}:{widget:Widget;stats:Stats}) {
   );
 }
 
-function QuickActions({widget}:{widget:Widget}) {
+function QuickActions({widget}:{widget:Widget;stats?:Stats}) {
   const actions=(widget.config?.actions as {label:string;href:string}[])||[{label:"Go to Chat",href:"/chat"},{label:"View Conversations",href:"/chat"}];
   return (
     <div style={card}>
@@ -129,7 +130,6 @@ function AiUsage({widget,stats}:{widget:Widget;stats:Stats}) {
   );
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const WIDGET_MAP: Record<string, any> = {
   "stat-card":StatCard,
   "conversation-chart":ConversationChart,
@@ -141,10 +141,12 @@ const WIDGET_MAP: Record<string, any> = {
 
 export function WidgetRenderer({widget,stats}:{widget:Widget;stats:Stats}) {
   const Component=WIDGET_MAP[widget.type];
-  if (!Component) return (
-    <div style={{background:"#fefce8",border:"1px solid #fde047",borderRadius:"12px",padding:"16px",fontSize:"13px",color:"#854d0e"}}>
-      Unknown widget: <code>{widget.type}</code>
-    </div>
-  );
+  if (!Component) {
+    return (
+      <div style={{background:"#fefce8",border:"1px solid #fde047",borderRadius:"12px",padding:"16px",fontSize:"13px",color:"#854d0e"}}>
+        Unknown widget: <code>{widget.type}</code>
+      </div>
+    );
+  }
   return <Component widget={widget} stats={stats}/>;
 }
